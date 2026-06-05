@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
+  <title>Дневники вампира | Глубинные тайны</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+      background: #0a0202;
+      color: #e0d6c2;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background-image: radial-gradient(circle at 20% 30%, #2c0e0e 2%, transparent 20%),
+                        radial-gradient(circle at 80% 70%, #1a0303 5%, transparent 30%),
+                        linear-gradient(180deg, #0f0505 0%, #1e0a0a 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><path d="M150 200 Q 200 150 250 200 T 300 100" stroke="%23400a0a" fill="none" stroke-width="20" opacity="0.15"/><circle cx="600" cy="500" r="80" fill="%233b0404" opacity="0.1"/><ellipse cx="200" cy="650" rx="120" ry="40" fill="%23440000" opacity="0.08"/></svg>');
+      background-size: cover;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 750px;
+      background: rgba(10, 5, 5, 0.75);
+      backdrop-filter: blur(18px);
+      border: 1px solid #5e3a3a;
+      box-shadow: 0 0 60px rgba(180, 0, 0, 0.3), inset 0 0 30px rgba(0,0,0,0.8);
+      border-radius: 48px 48px 36px 36px;
+      padding: 30px 25px 25px;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    /* ---------- ЭКРАН 1 ---------- */
+    .gate-screen {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+    }
+
+    .gate-question {
+      font-size: 2.4rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px crimson, 0 0 8px darkred;
+      margin-bottom: 50px;
+      color: #f5e7d3;
+      font-style: italic;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .buttons-row {
+      display: flex;
+      gap: 50px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .btn {
+      background: transparent;
+      border: 2px solid #b8865b;
+      color: #edd9b3;
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 15px 45px;
+      border-radius: 60px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      background: rgba(20, 5, 5, 0.6);
+      transition: 0.2s ease;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-shadow: 0 0 25px rgba(200, 0, 0, 0.5);
+      font-family: inherit;
+      position: relative;
+      user-select: none;
+    }
+
+    .btn-no-first {
+      border-color: #b87070;
+    }
+    .btn-no-first:hover {
+      background: #4a1515;
+      border-color: #ff4d4d;
+      color: #fff0e0;
+      box-shadow: 0 0 45px red;
+      transform: scale(1.05);
+    }
+
+    .btn-yes-run {
+      position: relative;
+      transition: transform 0.08s linear, top 0.08s linear, left 0.08s linear;
+      will-change: transform;
+      border-color: #6b4e4e;
+      color: #b89b9b;
+      background: rgba(30, 10, 10, 0.8);
+    }
+
+    /* ---------- ЭКРАН 2 ---------- */
+    .second-chance-screen {
+      display: none;
+      text-align: center;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+    .second-chance-screen.active {
+      display: flex;
+    }
+    .gate-screen.hidden {
+      display: none;
+    }
+    .second-question {
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-shadow: 0 0 18px #a52a2a, 0 0 5px black;
+      margin-bottom: 45px;
+      color: #f7e3c0;
+      font-style: italic;
+    }
+    .btn-stay {
+      background: rgba(70, 20, 20, 0.8);
+      border-color: #c44;
+    }
+    .btn-leave {
+      background: rgba(20, 20, 20, 0.7);
+      border-color: #6b5b5b;
+      color: #c0b0b0;
+    }
+
+    /* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
+    .main-content {
+      display: none;
+    }
+    .main-content.active {
+      display: block;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 2px solid #6d3737;
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+      justify-content: center;
+    }
+    .tab-btn {
+      background: rgba(40, 15, 15, 0.7);
+      border: 1px solid #7a4a4a;
+      color: #dbbdb0;
+      padding: 10px 18px;
+      font-size: 1.2rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.25s;
+      font-weight: bold;
+      letter-spacing: 1px;
+      backdrop-filter: blur(5px);
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: #6a2c2c;
+      border-color: #d98c8c;
+      color: #ffefdb;
+      box-shadow: 0 0 25px #b30000;
+      text-shadow: 0 0 10px black;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      border-left: 6px solid #b7410e;
+      padding-left: 18px;
+      color: #f3d59c;
+      text-shadow: 0 0 15px darkred;
+    }
+
+    .fact-card, .question-card {
+      background: rgba(22, 7, 7, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid #6e3e3e;
+      padding: 20px;
+      margin-bottom: 18px;
+      border-radius: 24px;
+      font-size: 1.3rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+      transition: transform 0.2s;
+    }
+    .fact-card:hover, .question-card:hover {
+      transform: translateY(-3px);
+      border-color: #b34b4b;
+    }
+    .icon-drop {
+      color: #c44;
+      margin-right: 8px;
+    }
+
+    /* Кнопка-сюрприз */
+    .surprise-btn-wrapper {
+      text-align: center;
+      margin: 35px 0 15px;
+    }
+    .btn-surprise {
+      background: rgba(100, 20, 20, 0.5);
+      border: 2px dashed #b85c5c;
+      color: #f0c8c8;
+      font-size: 1.4rem;
+      padding: 14px 28px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-style: italic;
+      letter-spacing: 2px;
+      backdrop-filter: blur(8px);
+      transition: 0.3s;
+      font-family: inherit;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+      text-transform: none;
+    }
+    .btn-surprise:hover {
+      background: #6d1a1a;
+      border-color: #ff9f9f;
+      color: #ffffff;
+      box-shadow: 0 0 40px #c44;
+      transform: scale(1.03);
+    }
+
+    .footer-note {
+      margin-top: 30px;
+      text-align: center;
+      font-style: italic;
+      color: #ab8b8b;
+      border-top: 1px dashed #5c3a3a;
+      padding-top: 18px;
+      font-size: 1rem;
+    }
+
+    /* ---------- СТРАНИЦА-СЮРПРИЗ (ВИДЕО) ---------- */
+    .surprise-page {
+      display: none;
+      text-align: center;
+    }
+    .surprise-page.active {
+      display: block;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 */
+      margin: 20px 0 25px;
+      border: 2px solid #5e2e2e;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(200, 0, 0, 0.4);
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .platform-list {
+      background: rgba(20, 5, 5, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid #6e3e3e;
+      border-radius: 24px;
+      padding: 25px;
+      margin: 20px 0;
+      font-size: 1.5rem;
+      line-height: 2.2;
+      letter-spacing: 2px;
+      color: #f3d2b0;
+    }
+    .platform-list span {
+      color: #ff7b7b;
+      font-weight: bold;
+    }
+    .btn-back {
+      background: rgba(40, 10, 10, 0.7);
+      border: 1px solid #a56b6b;
+      color: #ecc;
+      font-size: 1.3rem;
+      padding: 12px 30px;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-family: inherit;
+      transition: 0.3s;
+    }
+    .btn-back:hover {
+      background: #521f1f;
+      color: white;
+    }
+    .hurray-text {
+      font-size: 1.8rem;
+      margin: 20px 0 10px;
+      color: #f5c5a3;
+      text-shadow: 0 0 15px red;
+    }
+
+    @media (max-width: 500px) {
+      .gate-question, .second-question {
+        font-size: 1.8rem;
+      }
+      .btn {
+        font-size: 1.5rem;
+        padding: 12px 30px;
+      }
+      .btn-surprise {
+        font-size: 1.2rem;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+  <!-- ========== ЭКРАН 1: ВХОД ========== -->
+  <div class="gate-screen" id="gateScreen">
+    <div class="gate-question">
+      🩸 Ты так долго ждала...<br> и вот оно настало.<br> Ты готова это увидеть?
+    </div>
+    <div class="buttons-row">
+      <button class="btn btn-yes-run" id="yesRunningButton">ДА</button>
+      <button class="btn btn-no-first" id="noFirstButton">НЕТ</button>
+    </div>
+  </div>
+
+  <!-- ========== ЭКРАН 2: ВТОРОЙ ШАНС ========== -->
+  <div class="second-chance-screen" id="secondChanceScreen">
+    <div class="second-question">
+      🕯️ Уже уходишь...<br> так и не увидев это?<br> Тьма останется тайной.
+    </div>
+    <div class="buttons-row">
+      <button class="btn btn-stay" id="stayButton">💀 Остаться и увидеть</button>
+      <button class="btn btn-leave" id="leaveButton">🚪 Уйти навсегда</button>
+    </div>
+  </div>
+
+  <!-- ========== ОСНОВНОЙ КОНТЕНТ (ТАБЫ) ========== -->
+  <div class="main-content" id="mainContent">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="facts">🦇 Факты</button>
+      <button class="tab-btn" data-tab="questions">❓ Вопросы</button>
+      <button class="tab-btn" data-tab="diary">📜 Дневник</button>
+    </div>
+
+    <!-- Факты -->
+    <div class="tab-content active" id="facts">
+      <h2>🩸 Тайны за кадром</h2>
+      <div class="fact-card"><span class="icon-drop">🎬</span> <strong>Почти другой Стефан:</strong> Пол Уэсли изначально пробовался на роль Деймона, но продюсеры увидели в нём идеального «героя-мученика». А Йен Сомерхолдер приходил на пробы Стефана, но его харизма заставила создателей отдать ему роль старшего брата.</div>
+      <div class="fact-card"><span class="icon-drop">📖</span> <strong>Книжная Елена:</strong> В оригинальных книгах Л. Дж. Смит Елена — блондинка с голубыми глазами, эгоцентричная «королева школы», которая лишь к третьей книге становится мягче. Сериал полностью переписал её характер, сделав героиней-жертвой с первых серий.</div>
+      <div class="fact-card"><span class="icon-drop">🧛</span> <strong>Древняя кровь:</strong> Согласно лору, вампиризм появился задолго до Майклсонов. Эстер использовала заклинание из гримуара древней ведьмы Кетсии, которая создала первый в истории эликсир бессмертия за 2000 лет до событий сериала.</div>
+      <div class="fact-card"><span class="icon-drop">💔</span> <strong>Сцена, которую вырезали:</strong> В финале 5 сезона, когда Деймон и Бонни оказались в мире-тюрьме, изначально планировалось показать их совместную жизнь длиной в несколько десятилетий (около 60 лет) до возвращения.</div>
+      <div class="fact-card"><span class="icon-drop">🕸️</span> <strong>Кай Паркер и харизма:</strong> Персонаж Кая должен был умереть ещё в 6 сезоне, но игра Криса Вуда так впечатлила создателей, что они продлили его арку и даже вернули в 8 сезоне.</div>
+    </div>
+
+    <!-- Вопросы -->
+    <div class="tab-content" id="questions">
+      <h2>🕷️ Вопросы для знатоков</h2>
+      <div class="question-card"><span class="icon-drop">💭</span> Если бы тебе предложили вечную жизнь вампира, но с условием, что ты никогда не увидишь солнечный свет — согласилась бы?</div>
+      <div class="question-card"><span class="icon-drop">💭</span> Кого бы ты выбрала: Стефана, который уважает твою свободу, или Деймона, который готов сжечь мир ради тебя?</div>
+      <div class="question-card"><span class="icon-drop">💭</span> Как ты думаешь, почему Елена в книгах была блондинкой, а в сериале стала брюнеткой? Это меняет восприятие персонажа?</div>
+      <div class="question-card"><span class="icon-drop">💭</span> Если бы Майклсоны встретили Кетсию (создательницу бессмертия), кто бы вышел победителем в магической дуэли?</div>
+      <div class="question-card"><span class="icon-drop">💭</span> Какой момент сериала, по-твоему, был самым недооценённым и заслуживает большего внимания фанатов?</div>
+    </div>
+
+    <!-- Дневник -->
+    <div class="tab-content" id="diary">
+      <h2>📖 Страница дневника</h2>
+      <div class="fact-card" style="font-style: italic; background: #180909;">
+        <p><span class="icon-drop">🕰️</span> <strong>Дорогой дневник,</strong></p>
+        <p>Сегодня туман над Мистик-Фоллс снова скрывает тайны. Я слышала шаги за спиной, но обернувшись — лишь ворон. Деймон говорит, что я слишком любопытна. Возможно, это правда. Но как оставаться в стороне, когда сам воздух пропитан древней кровью?</p>
+        <p style="text-align: right; margin-top: 15px;">— Е. Г.</p>
+      </div>
+      <div class="fact-card" style="background: #1c0c0c;">
+        <p><span class="icon-drop">🗝️</span> <strong>Секретная заметка:</strong> Говорят, в подвале старой церкви до сих пор хранится гримуар Эмили Беннетт. Если ты найдёшь его — будь осторожна с заклинаниями.</p>
+      </div>
+      <div class="question-card">
+        <span class="icon-drop">🩸</span> <i>"Вечность — это долго. Особенно под конец."</i>
+      </div>
+    </div>
+
+    <!-- КНОПКА-СЮРПРИЗ -->
+    <div class="surprise-btn-wrapper">
+      <button class="btn btn-surprise" id="surpriseButton">✨ Это конечно не в тему нооооооо...</button>
+    </div>
+
+    <div class="footer-note">
+      ✦ Мистик-Фоллс хранит ещё больше тайн ✦
+    </div>
+  </div>
+
+  <!-- ========== СТРАНИЦА-СЮРПРИЗ (ВИДЕО + ПЛАТФОРМЫ) ========== -->
+  <div class="surprise-page" id="surprisePage">
+    <h2 style="border: none; text-align: center;">🎬 Тот самый момент...</h2>
+    
+    <!-- ВИДЕО (твоя ссылка) -->
+    <div class="video-container">
+      <iframe src="https://www.youtube.com/embed/T07uiTCbG5E" 
+              title="Дневники вампира" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="platform-list">
+      <p>📺 Уже на всех онлайн площадках 💗</p>
+      <p><span>📍 Старт</span></p>
+      <p><span>📍 Премьер</span></p>
+      <p><span>📍 Кион</span></p>
+      <p><span>📍 Окко</span></p>
+      <p><span>📍 ИВИ</span></p>
+      <p><span>📍 Кинопоиск</span></p>
+      <p><span>📍 Wink</span></p>
+    </div>
+
+    <div class="hurray-text">
+      Ураааа! Пошли пересматривать? 🩸
+    </div>
+
+    <button class="btn-back" id="backButton">◀ Вернуться к тайнам</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Экраны
+    const gateScreen = document.getElementById('gateScreen');
+    const secondChanceScreen = document.getElementById('secondChanceScreen');
+    const mainContent = document.getElementById('mainContent');
+    const surprisePage = document.getElementById('surprisePage');
+
+    // Кнопки
+    const yesRunningButton = document.getElementById('yesRunningButton');
+    const noFirstButton = document.getElementById('noFirstButton');
+    const stayButton = document.getElementById('stayButton');
+    const leaveButton = document.getElementById('leaveButton');
+    const surpriseButton = document.getElementById('surpriseButton');
+    const backButton = document.getElementById('backButton');
+
+    // Вкладки
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // --- УБЕГАЮЩАЯ КНОПКА "ДА" ---
+    function moveYesButton() {
+      const btn = yesRunningButton;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const btnWidth = rect.width;
+      const btnHeight = rect.height;
+      const maxX = window.innerWidth - btnWidth - 20;
+      const maxY = window.innerHeight - btnHeight - 20;
+      const minX = 20;
+      const minY = 20;
+      let randomX = Math.random() * (maxX - minX) + minX;
+      let randomY = Math.random() * (maxY - minY) + minY;
+      btn.style.position = 'fixed';
+      btn.style.left = randomX + 'px';
+      btn.style.top = randomY + 'px';
+      btn.style.zIndex = '999';
+      btn.style.transition = 'left 0.09s ease-out, top 0.09s ease-out';
+    }
+
+    yesRunningButton.addEventListener('mouseenter', moveYesButton);
+    yesRunningButton.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      moveYesButton();
+    });
+    yesRunningButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      moveYesButton();
+      yesRunningButton.textContent = '🩸ДА';
+      setTimeout(() => { if (yesRunningButton.textContent === '🩸ДА') yesRunningButton.textContent = 'ДА'; }, 300);
+    });
+
+    window.addEventListener('resize', () => {
+      if (yesRunningButton.style.position === 'fixed') {
+        const rect = yesRunningButton.getBoundingClientRect();
+        let left = parseFloat(yesRunningButton.style.left) || 0;
+        let top = parseFloat(yesRunningButton.style.top) || 0;
+        const maxX = window.innerWidth - rect.width - 10;
+        const maxY = window.innerHeight - rect.height - 10;
+        if (left > maxX) yesRunningButton.style.left = maxX + 'px';
+        if (top > maxY) yesRunningButton.style.top = maxY + 'px';
+        if (left < 5) yesRunningButton.style.left = '10px';
+        if (top < 5) yesRunningButton.style.top = '10px';
+      }
+    });
+
+    // --- ПЕРЕХОД НА ВТОРОЙ ЭКРАН (НЕТ) ---
+    noFirstButton.addEventListener('click', function() {
+      gateScreen.classList.add('hidden');
+      secondChanceScreen.classList.add('active');
+      if (yesRunningButton.style.position === 'fixed') {
+        yesRunningButton.style.position = '';
+        yesRunningButton.style.left = '';
+        yesRunningButton.style.top = '';
+        yesRunningButton.style.zIndex = '';
+      }
+    });
+
+    // --- ОСТАТЬСЯ И УВИДЕТЬ ---
+    stayButton.addEventListener('click', function() {
+      secondChanceScreen.classList.remove('active');
+      mainContent.classList.add('active');
+    });
+
+    // --- УЙТИ НАВСЕГДА ---
+    leaveButton.addEventListener('click', function() {
+      const container = document.getElementById('appContainer');
+      container.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: #b59b9b; font-style: italic;">
+          <h2 style="border: none; font-size: 2.5rem; color: #7a4a4a; text-shadow: 0 0 10px black;">🌑 Ты покинула Мистик-Фоллс...</h2>
+          <p style="font-size: 1.6rem; margin-top: 30px;">Тайны останутся нераскрытыми.</p>
+          <p style="margin-top: 40px; font-size: 1.2rem; color: #5c4040;">Но тьма всегда ждёт твоего возвращения.</p>
+          <p style="font-size: 2rem; margin-top: 50px;">🩸</p>
+        </div>
+      `;
+    });
+
+    // --- ВКЛАДКИ ---
+    function switchTab(tabId) {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      const activeButton = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      const activeContent = document.getElementById(tabId);
+      if (activeButton) activeButton.classList.add('active');
+      if (activeContent) activeContent.classList.add('active');
+    }
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        const tabId = this.getAttribute('data-tab');
+        if (tabId) switchTab(tabId);
+      });
+    });
+
+    // --- КНОПКА-СЮРПРИЗ (открывает страницу с видео) ---
+    surpriseButton.addEventListener('click', function() {
+      mainContent.classList.remove('active');
+      surprisePage.classList.add('active');
+    });
+
+    // --- КНОПКА НАЗАД (из сюрприза в основной контент) ---
+    backButton.addEventListener('click', function() {
+      surprisePage.classList.remove('active');
+      mainContent.classList.add('active');
+    });
+
+    // Начальная установка
+    window.addEventListener('load', function() {
+      if (!gateScreen.classList.contains('hidden')) {
+        secondChanceScreen.classList.remove('active');
+        mainContent.classList.remove('active');
+        surprisePage.classList.remove('active');
+      }
+    });
+  })();
+</script>
+</body>
+</html>
